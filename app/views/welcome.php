@@ -7,6 +7,7 @@
     <title>Mind</title>
 
     <!-- Fonts -->
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet" type="text/css">
 
     <!-- Styles -->
