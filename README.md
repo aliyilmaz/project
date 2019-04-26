@@ -1,10 +1,10 @@
 # project
-Quick start repository of the Mind framework.
+Mind Framework'ün hızlı başlangıç şablonudur.
 
-## Screenshots
+## Ekran görüntüleri
 
-#### Main Page
+#### Anasayfa
 [![Main](public/jpg/main.jpg)](https://github.com/aliyilmaz/Mind)
 
-#### Error Page
+#### Hata sayfası
 [![Main](public/jpg/error.jpg)](https://github.com/aliyilmaz/Mind)
