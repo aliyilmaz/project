@@ -1,5 +1,5 @@
 # project
-Mind Framework'ün hızlı başlangıç şablonudur.
+Mind sınıfının hızlı başlangıç şablonudur.
 
 ## Ekran görüntüleri
 
