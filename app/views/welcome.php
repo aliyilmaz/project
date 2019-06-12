@@ -62,13 +62,17 @@
         .m-b-md {
             margin-bottom: 30px;
         }
+        sup{
+            position: fixed;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
 <div class="flex-center position-ref full-height">
         <div class="content">
         <div class="title m-b-md">
-            Mind
+            Mind <sup>3.0.0</sup>
         </div>
 
         <div class="links">
