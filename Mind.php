@@ -78,7 +78,10 @@ class Mind extends PDO
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
 
-        set_time_limit(0);
+        if(strpos(ini_get('disable_functions'), 'set_time_limit') === false){
+            set_time_limit(0);
+        }
+
         ini_set('memory_limit', '-1');
 
         date_default_timezone_set($this->timezone);
