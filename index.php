@@ -8,7 +8,6 @@ $conf = array(
     'username'  =>  'root',
     'password'  =>  ''
 );
-
 $Mind = new Mind($conf);
 
 $Mind->route('/', 'app/views/welcome');
