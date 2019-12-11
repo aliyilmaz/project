@@ -72,7 +72,7 @@
 <div class="flex-center position-ref full-height">
         <div class="content">
         <div class="title m-b-md">
-            Mind <sup>3.1.1</sup>
+            Mind <sup>3.1.2</sup>
         </div>
 
         <div class="links">
