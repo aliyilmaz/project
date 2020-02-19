@@ -3,7 +3,7 @@
 /**
  *
  * @package    Mind
- * @version    Release: 3.1.3
+ * @version    Release: 3.1.4
  * @license    GPLv3
  * @author     Ali YILMAZ <aliyilmaz.work@gmail.com>
  * @category   Php Framework, Design pattern builder for PHP.
@@ -36,6 +36,7 @@ class Mind extends PDO
     public  $timestamp;
     public  $error_status   =  false;
     public  $error_file     =  'app/views/errors/404';
+    public  $errors         =  array();
 
     /**
      * Mind constructor.
@@ -1102,11 +1103,10 @@ class Mind extends PDO
      * @param string   $format
      * @return  bool
      * */
-    public function is_date($date, $format = 'd-m-Y H:i:s'){
+    public function is_date($date, $format = 'Y-m-d H:i:s'){
 
         $d = DateTime::createFromFormat($format, $date);
-
-        return $d->format($format) == $date AND $d ? true : false;
+        return $d && $d->format($format) == $date;
     }
 
     /**
@@ -1233,7 +1233,7 @@ class Mind extends PDO
      */
     public function is_url($url=null){
 
-        if(!isset($url)){
+        if(!is_string($url)){
             return false;
         }
 
@@ -1293,6 +1293,192 @@ class Mind extends PDO
         }
 
         return false;
+    }
+
+    /**
+     * is_age
+     * @param $date
+     * @param $age
+     * 
+     */
+    public function is_age($date, $age){
+        
+        $today = date("Y-m-d");
+        $diff = date_diff(date_create($date), date_create($today));
+
+        if($age > $diff->format('%y')){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Validation
+     * 
+     * @param $rule
+     * @param $data
+     * @param $message
+     * @return bool
+     */
+    public function validate($rule, $data, $message=array()){
+
+        $extra = '';
+        $rules = array();
+        $result = array();
+
+        foreach($rule as $name => $value){
+            
+            if(strstr($value, '|')){
+                foreach(explode('|', trim($value, '/')) as $val){
+                    $rules[$name][] = $val;
+                }
+            } else {
+                $rules[$name][] = $value;
+            }
+
+        }
+
+        foreach($rules as $column => $rule){
+            foreach($rule as $name){
+
+                // İlgili kuralın mesajı yoksa kural adı mesaj olarak belirtilir.
+                if(empty($message[$name])){
+                    $message[$name] = $name;
+                }
+                
+                if(strstr($name, ':')){
+                    $ruleData = explode(':', trim($name, ':'));
+                    if(count($ruleData) == 2){
+                        list($name, $extra) = $ruleData;
+                    }
+
+                }
+                switch ($name) {
+                    // minimum karakter kuralı 
+                    case 'min-num':
+                        if(strlen($data[$column])<$extra){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // maksimum karakter kuralı 
+                    case 'max-num':
+                        if(strlen($data[$column])>$extra){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // E-Posta adresi kuralı
+                    case 'email':
+                        if(!$this->is_email($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Zorunlu alan kuralı
+                    case 'required':
+                        if(empty($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Telefon numarası kuralı
+                    case 'phone':
+                        if(!$this->is_phone($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Tarih kuralı
+                    case 'date':
+                        if(empty($extra)){
+                            $extra = 'Y-m-d';
+                        }
+                        if(!$this->is_date($data[$column], $extra)){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // json kuralı 
+                    case 'json':
+                        if(!$this->is_json($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Renk kuralı 
+                    case 'color':
+                        if(!$this->is_color($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // URL kuralı 
+                    case 'url':
+                        if(!$this->is_url($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // https kuralı 
+                    case 'https':
+                        if(!$this->is_https($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // http kuralı 
+                    case 'http':
+                        if(!$this->is_http($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Numerik karakter kuralı 
+                    case 'numeric':
+                        if(!is_numeric($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Minumum yaş sınırlaması kuralı 
+                    case 'min-age':
+                        if(!is_numeric($extra) OR !$this->is_date($data[$column], 'Y-m-d') OR !$this->is_age($data[$column], $extra)){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Maksimum yaş sınırlaması kuralı 
+                    case 'max-age':
+                        if(!is_numeric($extra) OR !$this->is_date($data[$column], 'Y-m-d') OR !$this->is_age($data[$column], $extra)){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Benzersiz parametre kuralı 
+                    case 'unique':
+                        if($this->do_have($extra, $data[$column], $column)){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // Doğrulama kuralı 
+                    case 'bool':
+                        // Geçerlilik kontrolü
+                        $acceptable = array(true, false, 'true', 'false', 0, 1, '0', '1');
+                        if(!in_array($data[$column], $acceptable, true)){
+                            $this->errors[$column][$name] = 'True, false, 0 or 1 must be specified.';
+                        } else {
+                            if(in_array($extra, $acceptable, true)){
+                                // Karşılaştırma kuralı
+                                if(strcmp((string) $data[$column], (string) $extra == 'true')){
+                                    $this->errors[$column][$name] = 'Incompatibility was detected.';
+                                } 
+                            }
+                            
+                        }
+                        break;
+                    // Geçersiz kural engellendi.
+                    default:
+                        $this->errors[$column][$name] = 'Invalid rule has been blocked.';
+                    break;
+                }
+                $extra = '';
+            }
+        }
+
+       
+        if(empty($this->errors)){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
