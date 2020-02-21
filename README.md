@@ -1,10 +1,10 @@
 # project
-Mind sınıfının hızlı başlangıç şablonudur.
+It is the quick start version of the mind code framework.
 
-## Ekran görüntüleri
+## Screenshots
 
-#### Anasayfa
-[![Main](public/png/main.png)](https://github.com/aliyilmaz/Mind)
+#### Home Page
+[![Home Page](public/png/main.png)](https://github.com/aliyilmaz/Mind)
 
-#### Hata sayfası
-[![Main](public/png/error.png)](https://github.com/aliyilmaz/Mind)
+#### Home Page
+[![Error Page](public/png/error.png)](https://github.com/aliyilmaz/Mind)
