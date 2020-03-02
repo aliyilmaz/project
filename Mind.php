@@ -1312,11 +1312,131 @@ class Mind extends PDO
         $today = date("Y-m-d");
         $diff = date_diff(date_create($date), date_create($today));
 
-        if($age > $diff->format('%y')){
+        if($age >= $diff->format('%y')){
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * International Bank Account Number verification
+     *
+     * @params string $iban
+     * @return bool
+     */
+    function is_iban($iban){
+        $iban = strtolower(str_replace(' ','',$iban));
+        $Countries = array('al'=>28,'ad'=>24,'at'=>20,'az'=>28,'bh'=>22,'be'=>16,'ba'=>20,'br'=>29,'bg'=>22,'cr'=>21,'hr'=>21,'cy'=>28,'cz'=>24,'dk'=>18,'do'=>28,'ee'=>20,'fo'=>18,'fi'=>18,'fr'=>27,'ge'=>22,'de'=>22,'gi'=>23,'gr'=>27,'gl'=>18,'gt'=>28,'hu'=>28,'is'=>26,'ie'=>22,'il'=>23,'it'=>27,'jo'=>30,'kz'=>20,'kw'=>30,'lv'=>21,'lb'=>28,'li'=>21,'lt'=>20,'lu'=>20,'mk'=>19,'mt'=>31,'mr'=>27,'mu'=>30,'mc'=>27,'md'=>24,'me'=>22,'nl'=>18,'no'=>15,'pk'=>24,'ps'=>29,'pl'=>28,'pt'=>25,'qa'=>29,'ro'=>24,'sm'=>27,'sa'=>24,'rs'=>22,'sk'=>24,'si'=>19,'es'=>24,'se'=>24,'ch'=>21,'tn'=>24,'tr'=>26,'ae'=>23,'gb'=>22,'vg'=>24);
+        $Chars = array('a'=>10,'b'=>11,'c'=>12,'d'=>13,'e'=>14,'f'=>15,'g'=>16,'h'=>17,'i'=>18,'j'=>19,'k'=>20,'l'=>21,'m'=>22,'n'=>23,'o'=>24,'p'=>25,'q'=>26,'r'=>27,'s'=>28,'t'=>29,'u'=>30,'v'=>31,'w'=>32,'x'=>33,'y'=>34,'z'=>35);
+
+        if(!in_array(substr($iban,0,2), array_keys($Countries))){
+            return false;
+        }
+
+        if(strlen($iban) == $Countries[substr($iban,0,2)]){
+
+            $MovedChar = substr($iban, 4).substr($iban,0,4);
+            $MovedCharArray = str_split($MovedChar);
+            $NewString = "";
+
+            foreach($MovedCharArray AS $key => $value){
+                if(!is_numeric($MovedCharArray[$key])){
+                    $MovedCharArray[$key] = $Chars[$MovedCharArray[$key]];
+                }
+                $NewString .= $MovedCharArray[$key];
+            }
+
+            if(bcmod($NewString, '97') == 1)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * ipv4 verification
+     *
+     * @params string $ip
+     * @return bool
+     */
+    public function is_ipv4($ip){
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * ipv6 verification
+     *
+     * @params string $ip
+     * @return bool
+     */
+    public function is_ipv6($ip){
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Blood group verification
+     *
+     * @param $blood
+     * @param string $needle
+     * @return bool
+     */
+    public function is_blood($blood, $needle = null){
+
+        $bloods = array(
+            'AB+'=> array(
+                'AB+', 'AB-', 'B+', 'B-', 'A+', 'A-', '0+', '0-'
+            ),
+            'AB-'=> array(
+                'AB-', 'B-', 'A-', '0-'
+            ),
+            'B+'=> array(
+                'B+', 'B2-', '0+', '0-'
+            ),
+            'B-'=> array(
+                'B-', '0-'
+            ),
+            'A+'=> array(
+                'A+', 'A-', '0+', '0-'
+            ),
+            'A-'=> array(
+                'A-', '0-'
+            ),
+            '0+'=> array(
+                '0+', '0-'
+            ),
+            '0-'=> array(
+                '0-'
+            )
+        );
+
+        //  hasta ve donör parametreleri filtreden geçirilir
+        $blood = str_replace(array('RH', ' '), '', mb_strtoupper($blood));
+        $needle = str_replace(array('RH', ' '), '', mb_strtoupper($needle));
+
+        $map = array_keys($bloods);
+
+        // Kan grubu kontrolü
+        if(in_array($blood, $map) AND $needle == null){
+            return true;
+        }
+
+        // Donör uyumu kontrolü
+        if(in_array($blood, $map) AND in_array($needle, $bloods[$blood]) AND $needle != null){
+            return true;
+        }
+
+        return false;
+
     }
 
     /**
@@ -1470,7 +1590,31 @@ class Mind extends PDO
                             }
                             
                         }
-                        break;
+                    break;
+                    // IBAN doğrulama kuralı
+                    case 'iban':
+                        if(!$this->is_iban($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // ipv4 doğrulama kuralı
+                    case 'ipv4':
+                        if(!$this->is_ipv4($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // ipv6 doğrulama kuralı
+                    case 'ipv6':
+                        if(!$this->is_ipv6($data[$column])){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
+                    // kan grubu ve uyumu kuralı
+                    case 'blood':
+                        if(!$this->is_blood($data[$column], $extra)){
+                            $this->errors[$column][$name] = $message[$name];
+                        }
+                    break;
                     // Geçersiz kural engellendi.
                     default:
                         $this->errors[$column][$name] = 'Invalid rule has been blocked.';
