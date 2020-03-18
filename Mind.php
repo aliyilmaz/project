@@ -1440,6 +1440,52 @@ class Mind extends PDO
     }
 
     /**
+     *  Validates a given Latitude
+     * @param float|int|string $latitude
+     * @return bool
+     */
+    public function is_latitude($latitude){
+        $lat_pattern  = '/\A[+-]?(?:90(?:\.0{1,18})?|\d(?(?<=9)|\d?)\.\d{1,18})\z/x';
+
+        if (preg_match($lat_pattern, $latitude)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     *  Validates a given longitude
+     * @param float|int|string $longitude
+     * @return bool
+     */
+    public function is_longitude($longitude){
+        $long_pattern = '/\A[+-]?(?:180(?:\.0{1,18})?|(?:1[0-7]\d|\d{1,2})\.\d{1,18})\z/x';
+
+        if (preg_match($long_pattern, $longitude)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Validates a given coordinate
+     *
+     * @param float|int|string $lat Latitude
+     * @param float|int|string $long Longitude
+     * @return bool `true` if the coordinate is valid, `false` if not
+     */
+    public function is_coordinate($lat, $long) {
+
+        if ($this->is_latitude($lat) AND $this->is_longitude($long)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Validation
      * 
      * @param array $rule
@@ -1452,7 +1498,6 @@ class Mind extends PDO
 
         $extra = '';
         $rules = array();
-        $result = array();
 
         foreach($rule as $name => $value){
             
@@ -1614,6 +1659,29 @@ class Mind extends PDO
                         if(!$this->is_blood($data[$column], $extra)){
                             $this->errors[$column][$name] = $message[$name];
                         }
+                    break;
+                    // Koordinat kuralı
+                    case 'coordinate':
+
+                        if(!strstr($data[$column], ',')){
+                            $this->errors[$column][$name] = $message[$name];
+                        } else {
+
+                            $coordinates = explode(',', $data[$column]);
+                            if(count($coordinates)==2){
+
+                                list($lat, $long) = $coordinates;
+
+                                if(!$this->is_coordinate($lat, $long)){
+                                    $this->errors[$column][$name] = $message[$name];
+                                }
+
+                            } else {
+                                $this->errors[$column][$name] = $message[$name];
+                            }
+
+                        }
+
                     break;
                     // Geçersiz kural engellendi.
                     default:
@@ -2520,5 +2588,92 @@ class Mind extends PDO
             $outputdir = str_replace('\\', '/', $outputdir);
         }
         return $outputdir;
+    }
+
+    /**
+     *
+     * Calculates the distance between two points, given their
+     * latitude and longitude, and returns an array of values
+     * of the most common distance units
+     * {m, km, mi, ft, yd}
+     *
+     * @param float|int|string $lat1 Latitude of the first point
+     * @param float|int|string $lon1 Longitude of the first point
+     * @param float|int|string $lat2 Latitude of the second point
+     * @param float|int|string $lon2 Longitude of the second point
+     * @return mixed {bool|array}
+     */
+    public function distanceMeter($lat1, $lon1, $lat2, $lon2, $type = '') {
+
+        $output = array();
+
+        // koordinat değillerse false yanıtı döndürülür.
+        if(!$this->is_coordinate($lat1, $lon1) OR !$this->is_coordinate($lat2, $lon2)){ return false; }
+
+        // aynı koordinatlar belirtilmiş ise false yanıtı döndürülür.
+        if (($lat1 == $lat2) AND ($lon1 == $lon2)) { return false; }
+
+        // dereceden radyana dönüştürme işlemi
+        $latFrom = deg2rad($lat1);
+        $lonFrom = deg2rad($lon1);
+        $latTo = deg2rad($lat2);
+        $lonTo = deg2rad($lon2);
+
+        $lonDelta = $lonTo - $lonFrom;
+        $a = pow(cos($latTo) * sin($lonDelta), 2) +
+            pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+        $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+        $angle = atan2(sqrt($a), $b);
+
+        $meters     = $angle * 6371000;
+        $kilometers = $meters / 1000;
+        $miles      = $meters * 0.00062137;
+        $feet       = $meters * 3.2808399;
+        $yards      = $meters * 1.0936;
+
+        $data = array(
+            'm'     =>  round($meters, 2),
+            'km'    =>  round($kilometers, 2),
+            'mi'    =>  round($miles, 2),
+            'ft'    =>  round($feet, 2),
+            'yd'    =>  round($yards, 2)
+        );
+
+        // eğer ölçü birimi boşsa tüm ölçülerle yanıt verilir
+        if(empty($type)){
+            return $data;
+        }
+
+        // eğer ölçü birimi string ise ve müsaade edilen bir ölçüyse diziye eklenir
+        if(!is_array($type) AND in_array($type, array_keys($data))){
+            $type = array($type);
+        }
+
+        // eğer ölçü birimi string ise ve müsaade edilen bir ölçü değilse boş dizi geri döndürülür
+        if(!is_array($type) AND !in_array($type, array_keys($data))){
+            return false;
+        }
+
+        // gönderilen tüm ölçü birimlerinin doğruluğu kontrol edilir
+        foreach ($type as $name){
+            if(!in_array($name, array_keys($data))){
+                return $output;
+            }
+        }
+
+        // gönderilen ölçü birimlerinin yanıtları hazırlanır
+        foreach ($type as $name){
+            $output[$name] = $data[$name];
+        }
+
+        // tek bir ölçü birimi gönderilmiş ise sadece onun değeri geri döndürülür
+        if(count($type)==1){
+            $name = implode('', $type);
+            return $output[$name];
+        }
+
+        // birden çok ölçü birimi yanıtları geri döndürülür
+        return $output;
     }
 }
