@@ -3,7 +3,7 @@
 /**
  *
  * @package    Mind
- * @version    Release: 3.1.8
+ * @version    Release: 3.2.0
  * @license    GPL3
  * @author     Ali YILMAZ <aliyilmaz.work@gmail.com>
  * @category   Php Framework, Design pattern builder for PHP.
@@ -923,26 +923,104 @@ class Mind extends PDO
             $scheme['column'] = $columns;
         }
 
+        $output = $this->getData($tblName, $scheme);
+
+        return $output;
+    }
+
+    /**
+     * Research assistant.
+     * It serves to obtain a array.
+     * 
+     * @param string $tblName
+     * @param array $map
+     * @param mixed $column
+     * @return array
+     * 
+     */
+    public function theodore($tblName, $map, $column=null){
+
+        $output = array();
+        $columns = array();
+
+        $scheme['search']['and'] = $map;
+
+        // Sütun(lar) belirtilmişse
+        if (!empty($column)) {
+
+            // bir sütun belirtilmişse
+            if(!is_array($column)){
+                $columns = array($column);
+            } else {
+                $columns = $column;
+            }
+
+            // tablo sütunları elde ediliyor
+            $getColumns = $this->columnList($tblName);
+
+            // belirtilen sütun(lar) var mı bakılıyor
+            foreach($columns as $column){
+
+                // yoksa boş bir array geri döndürülüyor
+                if(!in_array($column, $getColumns)){
+                    return [];
+                }
+
+            }
+
+            // izin verilen sütun(lar) belirtiliyor
+            $scheme['column'] = $columns;
+        }
+
         $data = $this->getData($tblName, $scheme);
 
-        // tek sütun varsa içerikleri dizi olarak derlenir
-        if(count($columns)==1){
-
-            foreach ($data as $row) {
-                $column = implode('', $columns);
-                $output[] = $row[$column];
-            }
+        if(count($data)==1 AND isset($data[0])){
+            $output = $data[0];
         } else {
-            $output = $data;
+            $output = [];
         }
 
-        if(count($data)==1 AND isset($output[0])){
-            $output = $output[0];
+        return $output;
+    }
+
+    /**
+     * Research assistant.
+     * Used to obtain an element of an array
+     * 
+     * @param string $tblName
+     * @param array $map
+     * @param string $column
+     * @return string
+     * 
+     */
+    public function amelia($tblName, $map, $column){
+
+        $output = '';
+
+        $scheme['search']['and'] = $map;
+
+        // Sütun string olarak gönderilmemişse
+        if (!is_string($column)) {
+            return $output;
         }
 
-        if(count($data) == 1 AND $status === true){
-            $output = array($output[0]);
+        // tablo sütunları elde ediliyor
+        $getColumns = $this->columnList($tblName);
+
+        // yoksa boş bir string geri döndürülüyor
+        if(!in_array($column, $getColumns)){
+            return $output;
         }
+
+        // izin verilen sütun belirtiliyor
+        $scheme['column'] = $column;
+
+        $data = $this->getData($tblName, $scheme);
+
+        if(count($data)==1 AND isset($data[0])){
+            $output = $data[0][$column];
+        }
+
         return $output;
     }
 
@@ -1569,6 +1647,16 @@ class Mind extends PDO
     }
 
     /**
+     * md5 hash checking method.
+     * 
+     * @param string $md5
+     * @return bool
+     */
+    public function is_md5($md5 = ''){
+        return strlen($md5) == 32 && ctype_xdigit($md5);
+    }
+
+    /**
      * Validation
      * 
      * @param array $rule
@@ -1983,7 +2071,6 @@ class Mind extends PDO
             header('Location: '.$url);
         }
         ob_end_flush();
-        exit();
     }
 
     /**
