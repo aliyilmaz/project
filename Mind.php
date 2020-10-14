@@ -3,7 +3,7 @@
 /**
  *
  * @package    Mind
- * @version    Release: 3.2.1
+ * @version    Release: 3.2.2
  * @license    GPL3
  * @author     Ali YILMAZ <aliyilmaz.work@gmail.com>
  * @category   Php Framework, Design pattern builder for PHP.
@@ -767,6 +767,23 @@ class Mind extends PDO
             $sqlColumns = $tblName.'.'.implode(', '.$tblName.'.', $columns);
         }
 
+        $prefix = ' BINARY ';
+        $suffix = ' = ?';
+        if(!empty($options['search']['scope'])){
+            $options['search']['scope'] = mb_strtoupper($options['search']['scope']);
+            switch ($options['search']['scope']) {
+                case 'LIKE':
+                    $prefix = '';
+                    $suffix = ' LIKE ?';
+                    break;
+                case 'BINARY':
+                    $prefix = ' BINARY ';
+                    $suffix = ' = ?';
+                    break;
+            }
+        }
+
+
         $prepareArray = array();
         $executeArray = array();
 
@@ -791,13 +808,14 @@ class Mind extends PDO
             foreach ( $searchColumns as $column ) {
 
                 foreach ( $keyword as $value ) {
-                    $prepareArray[] = $column.' LIKE ?';
+                    $prepareArray[] = $prefix.$column.$suffix;
                     $executeArray[] = $value;
                 }
 
             }
 
             $sql = 'WHERE '.implode(' OR ', $prepareArray);
+
         }
 
         $delimiterArray = array('and', 'AND', 'or', 'OR');
@@ -832,8 +850,8 @@ class Mind extends PDO
 
                 foreach ($row as $column => $value) {
 
-                    $x[$key][] = $column.' LIKE ?';
-                    $prepareArray[] = $column.' LIKE ?';
+                    $x[$key][] = $prefix.$column.$suffix;
+                    $prepareArray[] = $prefix.$column.$suffix;
                     $executeArray[] = $value;
                 }
                 
@@ -855,8 +873,8 @@ class Mind extends PDO
 
                 foreach ($row as $column => $value) {
 
-                    $x[$key][] = $column.' LIKE ?';
-                    $prepareArray[] = $column.' LIKE ?';
+                    $x[$key][] = $prefix.$column.$suffix;
+                    $prepareArray[] = $prefix.$column.$suffix;
                     $executeArray[] = $value;
                 }
                 
