@@ -115,6 +115,8 @@ Mind, rota adresine tanımlanan katmanların geliştirilmesinde kullanılır. T�
 -   [get_contents](https://github.com/aliyilmaz/Mind/blob/master/docs/tr-readme.md#get_contents)
 -   [distanceMeter](https://github.com/aliyilmaz/Mind/blob/master/docs/tr-readme.md#distanceMeter)
 
+Daha fazlası için, [Mind'ın dökümanını](https://github.com/aliyilmaz/Mind/blob/master/docs/tr-readme) inceleyebilirsiniz.
+
 ## Ekran görüntüleri
 
 #### Anasayfa
