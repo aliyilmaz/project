@@ -1,0 +1,18 @@
+{
+    "name": "mind/project",
+    "description": "It is an example of a lean project created for you to start developing projects with Mind framework immediately.",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Ali Yılmaz",
+            "email": "aliyilmaz.work@gmail.com"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
