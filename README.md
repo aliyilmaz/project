@@ -33,13 +33,13 @@ Mind is used in the development of layers defined by the route address. With the
 
 ---
 
-For more, [Mind's document](https://github.com/aliyilmaz/Mind/blob/master/docs/en-readme.md) you can review.
+For more, [Mind's document](https://github.com/aliyilmaz/Mind/blob/main/docs/en-readme.md) you can review.
 
 ---
 ## Screenshots
 
 #### Home page
-[![Home Page](https://raw.githubusercontent.com/aliyilmaz/project/master/public/png/main.png)](https://github.com/aliyilmaz/Mind)
+[![Home Page](https://raw.githubusercontent.com/aliyilmaz/project/main/public/png/main.png)](https://github.com/aliyilmaz/Mind)
 
 #### Error page
-[![Error Page](https://raw.githubusercontent.com/aliyilmaz/project/master/public/png/error.png)](https://github.com/aliyilmaz/Mind)
+[![Error Page](https://raw.githubusercontent.com/aliyilmaz/project/main/public/png/error.png)](https://github.com/aliyilmaz/Mind)
