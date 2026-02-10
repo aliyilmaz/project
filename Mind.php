@@ -3,7 +3,7 @@
 /**
  *
  * @package    Mind
- * @version    Release: 6.0.8
+ * @version    Release: 6.0.9
  * @license    GPL3
  * @author     Ali YILMAZ <aliyilmaz.work@gmail.com>
  * @category   Php Framework, Design pattern builder for PHP.
@@ -1694,10 +1694,12 @@ class Mind
      * @param string $directory
      * @return json|export
      */
-    public function backup($dbnames, $directory='')
+    public function backup($dbnames, $directory='', $drive='')
     {
-        if(empty($this->db)) return;
         $result = array();
+
+        $directory = (empty($directory)) ? '' : $directory;
+        $drive = (empty($drive)) ? $this->db['drive'] : $drive;
 
         if(is_string($dbnames)){
             $dbnames = array($dbnames);
@@ -1722,6 +1724,10 @@ class Mind
                     $result[$dbname][$table]['config'] = $increments;
                     $result[$dbname][$table]['schema'] = $this->tableInterpriter($table);
                     $result[$dbname][$table]['data'] = $this->getData($table);
+                    if($drive == 'sqlite'){
+                        $newResult[$dbname.'.sqlite'] = $result[$dbname];
+                        $result = $newResult;
+                    }
                 }
             }
 
@@ -1730,11 +1736,10 @@ class Mind
         }
         
         $data = $this->json_encode($result);
-        $filename = $this->db['drive'].'_backup_'.$this->permalink($this->timestamp, array('delimiter'=>'_')).'.json';
+        $filename = $drive.'_backup_'.$this->permalink($this->timestamp, array('delimiter'=>'_')).'.json';
         if(!empty($directory)){
-            if(is_dir($directory)){
                 $this->write($data, $directory.'/'.$filename);
-            } 
+                return $directory.'/'.$filename;
         } else {
            $this->saveAs($data, $filename);
         }
